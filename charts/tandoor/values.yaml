@@ -56,6 +56,28 @@ env: []
 #      secretKeyRef:
 #        name: recipes-secrets
 #        key: password
+# Email Support
+#  - name: EMAIL_HOST
+#    value: smtp.mailgun.org
+#  - name: DEFAULT_FROM_EMAIL
+#    value: "donotreply@mailings.geekbeacon.org"
+#  - name: EMAIL_USE_TLS
+#    value: "1"
+# use SSL or TLS accordingly
+#  - name: EMAIL_USE_SSL
+#    value: "0"
+#  - name: EMAIL_PORT
+#    value: "587"
+#  - name: EMAIL_HOST_USER
+#    valueFrom:
+#      secretKeyRef:
+#        name: recipes-secrets
+#        key: EMAIL_HOST_USER
+#  - name: EMAIL_HOST_PASSWORD
+#    valueFrom:
+#      secretKeyRef:
+#        name: recipes-secrets
+#        key: EMAIL_HOST_PASSWORD
 
 # Environment variables from ConfigMap or Secret
 envFrom: []

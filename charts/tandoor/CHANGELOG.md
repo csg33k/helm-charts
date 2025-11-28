@@ -1,6 +1,10 @@
 # Changelog
 
-[Unreleased/0.0.1]
+[Unreleased/0.0.2]
+
+ - Added documentation around Email support. Works in 0.0.1 but not in values.yml file
+ 
+[0.0.1]
 
 Tandoor inital version:
  - Deployment, cluster service, allows for PVC
