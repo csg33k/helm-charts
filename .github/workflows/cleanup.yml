@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "5 * * * *" # every hour
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    name: Delete old test images
+    permissions:
+      packages: write
+    steps:
+      - uses: snok/container-retention-policy@v3.0.0
+        with:
+          account: csg33k
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: "tandoor"
+          # image-names: "tandoor, another-chart, third-chart"
+          image-tags: "*-dev-*"
+          cut-off: 1w
+          dry-run: true

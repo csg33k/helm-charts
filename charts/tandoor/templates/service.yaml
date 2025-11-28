@@ -13,9 +13,7 @@ metadata:
 
 spec:
   selector:
-    app:
       {{- include "tandoor.selectorLabels" . | nindent 6 }}
-    # app: recipes
   ports:
     - port: 80
       targetPort: 80

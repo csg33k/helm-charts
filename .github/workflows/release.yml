@@ -1,0 +1,81 @@
+name: ReleaseHelmChart
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    paths:
+      - "charts/*/Chart.yaml"
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      packages: write # Required for GHCR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Package and Push Helm Charts
+        run: |
+          ./.github/scripts/repo_setup.sh
+          for chart in charts/*; do
+            if [ -d "$chart" ]; then
+              chart_name=$(basename "$chart")
+              echo "Processing chart: $chart_name"
+
+              # Update dependencies if Chart.yaml has dependencies
+              if [ -f "$chart/Chart.yaml" ]; then
+                if grep -q "dependencies:" "$chart/Chart.yaml"; then
+                  echo "Updating dependencies for $chart_name"
+                  helm dependency update "$chart"
+                fi
+              fi
+
+              # Get the version from Chart.yaml
+              version=$(grep '^version:' "$chart/Chart.yaml" | awk '{print $2}')
+
+              # Add short commit SHA for pull requests
+              if [ "${{ github.event_name }}" = "pull_request" ]; then
+                short_sha=$(echo "${{ github.sha }}" | cut -c1-7)
+                version="${version}-dev-${short_sha}"
+                echo "Pull request detected, using version: $version"
+
+                # Update Chart.yaml with commit version
+                sed -i "s/^version:.*/version: $version/" "$chart/Chart.yaml"
+              fi
+
+              # Package the chart
+              helm package "$chart"
+
+              # Check if version exists in GHCR
+              existing=$(helm show chart oci://ghcr.io/${{ github.repository_owner }}/${chart_name} --version ${version} 2>/dev/null || true)
+              if [ -n "$existing" ]; then
+                echo "Version $version of $chart_name already exists, skipping push."
+              else
+                echo "Pushing ${chart_name}-${version}.tgz to GitHub Container Registry"
+                helm push "${chart_name}-${version}.tgz" oci://ghcr.io/${{ github.repository_owner }}
+              fi
+            fi
+          done
