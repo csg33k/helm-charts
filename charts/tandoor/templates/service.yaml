@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tandoor.fullname" . }}
+  namespace:  {{ include  "tandoor.namespace" . }}
+  labels:
+    {{- include "tandoor.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+spec:
+  selector:
+    app:
+      {{- include "tandoor.selectorLabels" . | nindent 6 }}
+    # app: recipes
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  type: ClusterIP

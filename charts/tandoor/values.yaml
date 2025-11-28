@@ -1,0 +1,92 @@
+namespaceOverride: tandoor
+nameOverride: ""
+
+global:
+  create_namespace: false
+  image: vabene1111/recipes
+  tandoor_version: 2.3
+
+tandoor:
+  config:
+    livenessProbe:
+      enabled: true
+      # initialDelaySeconds: 120
+      # periodSeconds: 10
+      # timeoutSeconds: 5
+      # failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      # initialDelaySeconds: 30
+      # periodSeconds: 10
+      # timeoutSeconds: 5
+      # failureThreshold: 3
+    replicas: 1
+
+# Environment variables
+env: []
+## Values below will get you to a basic working installation
+#  - name: DB_ENGINE
+#    value: django.db.backends.postgresql
+#  - name: POSTGRES_HOST
+#    value: shared-rw.postgres-operator.svc.cluster.local
+#  - name: POSTGRES_PORT
+#    value: "5432"
+#  - name: POSTGRES_DB
+#    value: fooddb
+#  - name: SOCIAL_PROVIDERS
+#    value: allauth.socialaccount.providers.openid_connect
+#  - name: SOCIALACCOUNT_PROVIDERS
+#    valueFrom:
+#      secretKeyRef:
+#        name: recipes-secrets
+#        key: oidc-config
+#  - name: SECRET_KEY
+#    valueFrom:
+#      secretKeyRef:
+#        name: recipes-secrets
+#        key: secret-key
+#  - name: POSTGRES_USER
+#    valueFrom:
+#      secretKeyRef:
+#        name: recipes-secrets
+#        key: username
+#  - name: POSTGRES_PASSWORD
+#    valueFrom:
+#      secretKeyRef:
+#        name: recipes-secrets
+#        key: password
+
+# Environment variables from ConfigMap or Secret
+envFrom: []
+  # - configMapRef:
+  #     name: my-config
+  # - secretRef:
+  #     name: my-secret
+
+commonLabels: {}
+  # team: platform
+  # environment: production
+  # Common annotations applied to all resources
+commonAnnotations: {}
+  # company.com/owner: "platform-team"
+  #
+
+# Persistent Volume Claims, is not strictly required but it's highly recommended
+# to create a few volumes to persist your data. Otherwise those files would reboot
+# on each pod restart.
+persistence:
+  enabled: false
+  volumes:
+    - name: staticfiles
+      mountPath: /opt/recipes/staticfiles
+      size: 1Gi
+    #     storageClass: longhorn-1r
+    #     accessModes:
+    #       - ReadWriteOnce
+    - name: mediafiles
+      mountPath: /opt/recipes/mediafiles
+      size: 1Gi
+#     accessModes:
+#       - ReadWriteOnce
+
+extraResources: []

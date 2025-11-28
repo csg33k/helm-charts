@@ -1,0 +1,6 @@
+{{ if .Values.global.create_namespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  {{ include  "tandoor.namespace" . }}
+{{- end }}

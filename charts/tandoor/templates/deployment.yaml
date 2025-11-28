@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tandoor.fullname" . }}
+  namespace:  {{ include  "tandoor.namespace" . }}
+  labels:
+    {{- include "tandoor.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.tandoor.config.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "tandoor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tandoor.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: recipes
+          image: {{ .Values.global.image | default "vabene1111/recipes" }}:{{ .Values.global.tandoor_version | default "2.3" }}
+          ports:
+            - containerPort: 80
+              name: http
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- if .Values.tandoor.config.livenessProbe.enabled | default false }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: {{ .Values.tandoor.config.livenessProbe.initialDelaySeconds | default 120  }}
+            periodSeconds: {{ .Values.tandoor.config.livenessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.tandoor.config.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.tandoor.config.livenessProbe.failureThreshold | default 3 }}
+{{- end }}
+{{- if .Values.tandoor.config.readinessProbe.enabled | default false }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: {{ .Values.tandoor.config.readinessProbe.initialDelaySeconds | default 60  }}
+            periodSeconds: {{ .Values.tandoor.config.readinessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.tandoor.config.readinessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.tandoor.config.readinessProbe.failureThreshold | default 3 }}
+{{- end }}
+{{- if .Values.persistence.enabled | default false }}
+{{- if .Values.persistence.volumes }}
+          volumeMounts:
+          {{- range .Values.persistence.volumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+          {{- end }}
+      volumes:
+      {{- range .Values.persistence.volumes }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: recipes-{{ .name }}
+      {{- end }}
+
+{{- end }}
+{{- end }}

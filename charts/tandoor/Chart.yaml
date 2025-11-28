@@ -1,0 +1,7 @@
+apiVersion: v2
+name: tandoor
+description: Tandoor char
+version: 0.0.1
+maintainers:
+  - name: csgeek
+    email: dev@esamir.com

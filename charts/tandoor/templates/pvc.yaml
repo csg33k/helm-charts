@@ -1,0 +1,28 @@
+{{ if .Values.persistence.enabled }}
+{{- $root := . }}
+{{- range .Values.persistence.volumes }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: recipes-{{ .name }}
+  namespace:  {{ include  "tandoor.namespace" $root }}
+  labels:
+    {{- include "tandoor.labels" $root | nindent 4 }}
+  {{- with $root.Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+spec:
+  accessModes:
+    {{- toYaml (.accessModes | default (list "ReadWriteOnce")) | nindent 4 }}
+  {{- if .storageClass }}
+  storageClassName: {{ .storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .size | default "1Gi" }}
+---
+{{- end }}
+
+{{- end }}
