@@ -21,7 +21,7 @@ spec:
         {{- include "tandoor.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: recipes
+        - name: {{ include "tandoor.fullname" . }}
           image: {{ .Values.global.image | default "vabene1111/recipes" }}:{{ .Values.global.tandoor_version | default "2.3" }}
           ports:
             - containerPort: 80
@@ -65,10 +65,11 @@ spec:
               {{- end }}
           {{- end }}
       volumes:
+      {{- $root := . }}
       {{- range .Values.persistence.volumes }}
         - name: {{ .name }}
           persistentVolumeClaim:
-            claimName: recipes-{{ .name }}
+            claimName: {{ include "tandoor.fullname" $root }}-{{ .name }}
       {{- end }}
 
 {{- end }}
