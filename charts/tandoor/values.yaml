@@ -21,6 +21,7 @@ tandoor:
       # periodSeconds: 10
       # timeoutSeconds: 5
       # failureThreshold: 3
+    # This can be adjusted but I'm not sure how well tandoor will handle multiple pods
     replicas: 1
 
 # Environment variables
