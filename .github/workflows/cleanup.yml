@@ -14,7 +14,6 @@ jobs:
         with:
           account: csg33k
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "helm-charts/tandoor"
-          # image-names: "helm-charts/tandoor, helm-charts/another-chart, helm-charts/third-chart"
+          image-names: "tandoor"
           image-tags: "*-dev-*"
           cut-off: 1w
