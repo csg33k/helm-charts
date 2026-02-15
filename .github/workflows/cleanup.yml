@@ -3,20 +3,32 @@ name: Helm Chart Cleanup
 on:
   workflow_dispatch:
   schedule:
-    - cron: "5 * * * *" # every hour
+    - cron: "5 * * * *"
 
 jobs:
   clean:
     runs-on: ubuntu-latest
-    name: Delete old test images
+    name: Delete old helm chart versions
     permissions:
       packages: write
     steps:
-      - uses: snok/container-retention-policy@v3.0.0
-        with:
-          account: csg33k
-          token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "helm-charts/tandoor"
-          image-tags: "*-dev-*"
-          cut-off: 1w
-
+      - name: Delete old dev versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get all versions of the helm-charts/tandoor package
+          package_name="helm-charts%2Ftandoor"
+          
+          # Calculate cutoff date (1 week ago)
+          cutoff_date=$(date -d '1 week ago' --iso-8601=seconds)
+          
+          # List and delete old dev versions
+          gh api --paginate \
+            "/users/${{ github.repository_owner }}/packages/container/${package_name}/versions" \
+            --jq ".[] | select(.metadata.container.tags[] | contains(\"-dev-\")) | select(.updated_at < \"${cutoff_date}\") | .id" \
+          | while read version_id; do
+            echo "Deleting version ID: $version_id"
+            gh api --method DELETE \
+              "/users/${{ github.repository_owner }}/packages/container/${package_name}/versions/${version_id}" \
+              && echo "Deleted successfully" || echo "Failed to delete"
+          done
