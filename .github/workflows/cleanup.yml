@@ -1,3 +1,5 @@
+name: Helm Chart Cleanup
+
 on:
   workflow_dispatch:
   schedule:
@@ -14,6 +16,7 @@ jobs:
         with:
           account: csg33k
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "tandoor"
+          image-names: "helm-charts/tandoor"
           image-tags: "*-dev-*"
           cut-off: 1w
+
